@@ -1,20 +1,13 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
-import type { AppForYouResult, Item as AppVideoItem, ThreePointV2 } from '~/models/video/appForYou'
-import type { Item as VideoItem, forYouResult } from '~/models/video/forYou'
+import type { Item as AppVideoItem, ThreePointV2 } from '~/models/video/appForYou'
+import type { Item as VideoItem } from '~/models/video/forYou'
 import type { GridLayout } from '~/logic'
-import { accessKey, settings } from '~/logic'
-import { LanguageType } from '~/enums/appEnums'
-import { TVAppKey } from '~/utils/authProvider'
+import { settings } from '~/logic'
 
 const props = defineProps<{
   gridLayout: GridLayout
-}>()
-
-const emit = defineEmits<{
-  (e: 'beforeLoading'): void
-  (e: 'afterLoading'): void
 }>()
 
 const gridValue = computed((): string => {
@@ -25,12 +18,12 @@ const gridValue = computed((): string => {
   return '~ cols-1 gap-4'
 })
 
-const videoList = reactive<VideoItem[]>([])
-const appVideoList = reactive<AppVideoItem[]>([])
-const isLoading = ref<boolean>(true)
+const videoList = inject('recommendCache') as VideoItem[]
+const appVideoList = inject('recommendCacheAPP') as AppVideoItem[]
+const recommendCacheRecord = inject('recommendCacheStrorageRecord') as Ref<number[]>
+// const isLoading = ref<boolean>(true)
 const needToLoginFirst = ref<boolean>(false)
 const containerRef = ref<HTMLElement>() as Ref<HTMLElement>
-const refreshIdx = ref<number>(1)
 const noMoreContent = ref<boolean>(false)
 const { handleReachBottom, handlePageRefresh, scrollbarRef } = useBewlyApp()
 const showVideoOptions = ref<boolean>(false)
@@ -41,155 +34,42 @@ const activatedVideo = ref<AppVideoItem | null>()
 const videoCardRef = ref(null)
 const dislikedVideoIds = ref<number[]>([])
 
-const updateRecommendCache = inject('updateRecommendCache') as (data: VideoItem[]) => void
-const updateRecommendCacheAPP = inject('updateRecommendCacheAPP') as (data: AppVideoItem[]) => void
+const trans2home = inject('trans2home') as () => void
 
-watch(() => settings.value.recommendationMode, () => {
-  initData()
+watch(videoList, () => {
+  noMoreContent.value = settings.value.recommendationMode === 'web' && videoList.length <= recommendCacheRecord.value[0]
+})
+
+watch(appVideoList, () => {
+  noMoreContent.value = settings.value.recommendationMode === 'app' && appVideoList.length <= recommendCacheRecord.value[0]
 })
 
 onClickOutside(videoCardRef, () => {
   closeVideoOptions()
 })
 
-onMounted(async () => {
-  // Delay by 0.2 seconds to obtain the `settings.value.recommendationMode` value
-  // otherwise the `settings.value.recommendationMode` value will be undefined
-  // i have no idea to fix that...
-  setTimeout(async () => {
-    initData()
-  }, 200)
-
+onMounted(() => {
   initPageAction()
+  initData()
 })
 
 onActivated(() => {
   initPageAction()
 })
 
-async function initData() {
-  videoList.length = 0
-  appVideoList.length = 0
-  await getData()
-    .then(() => {
-      if (!settings.value.useRecommendCache)
-        return
-      watch(
-        isLoading,
-        () => {
-          settings.value.recommendationMode === 'web' ? updateRecommendCache(videoList) : updateRecommendCacheAPP(appVideoList)
-        },
-        { once: true },
-      )
-    })
-}
-
-async function getData() {
-  if (settings.value.recommendationMode === 'web') {
-    getRecommendVideos()
-  }
-  else {
-    for (let i = 0; i < 3; i++)
-      await getAppRecommendVideos()
-  }
+function initData() {
+  noMoreContent.value = settings.value.recommendationMode === 'web'
+    ? videoList.length <= recommendCacheRecord.value[0]
+    : appVideoList.length <= recommendCacheRecord.value[0]
 }
 
 function initPageAction() {
-  handleReachBottom.value = async () => {
-    if (isLoading.value)
-      return
-    if (noMoreContent.value)
-      return
+  handleReachBottom.value = () => {
 
-    getData()
   }
 
   handlePageRefresh.value = async () => {
-    if (isLoading.value)
-      return
-
-    initData()
-  }
-}
-
-async function getRecommendVideos() {
-  emit('beforeLoading')
-  isLoading.value = true
-  try {
-    const response: forYouResult = await browser.runtime.sendMessage({
-      contentScriptQuery: 'getRecommendVideos',
-      refreshIdx: refreshIdx.value++,
-    })
-
-    if (!response.data) {
-      noMoreContent.value = true
-      return
-    }
-
-    if (response.code === 0) {
-      const resData = [] as VideoItem[]
-
-      response.data.item.forEach((item: VideoItem) => {
-        resData.push(item)
-      })
-
-      // when videoList has length property, it means it is the first time to load
-      if (!videoList.length) {
-        Object.assign(videoList, resData)
-      }
-      else {
-        // else we concat the new data to the old data
-        Object.assign(videoList, videoList.concat(resData))
-      }
-    }
-    else if (response.code === 62011) {
-      needToLoginFirst.value = true
-    }
-  }
-  finally {
-    isLoading.value = false
-    emit('afterLoading')
-  }
-}
-
-async function getAppRecommendVideos() {
-  emit('beforeLoading')
-  isLoading.value = true
-  try {
-    const response: AppForYouResult = await browser.runtime.sendMessage({
-      contentScriptQuery: 'getAppRecommendVideos',
-      accessKey: accessKey.value,
-      sLocale: settings.value.language !== LanguageType.Mandarin_CN ? 'zh-Hant_TW' : 'zh-Hans_CN',
-      cLocale: settings.value.language !== LanguageType.Mandarin_CN ? 'zh-Hant_TW' : 'zh-Hans_CN',
-      appkey: TVAppKey.appkey,
-      idx: appVideoList.length > 0 ? appVideoList[appVideoList.length - 1].idx : 1,
-    })
-
-    if (response.code === 0) {
-      const resData = [] as AppVideoItem[]
-
-      response.data.items.forEach((item: AppVideoItem) => {
-        // Remove banner & ad cards
-        if (!item.card_type.includes('banner') && item.card_type !== 'cm_v1')
-          resData.push(item)
-      })
-
-      // when videoList has length property, it means it is the first time to load
-      if (!appVideoList.length) {
-        Object.assign(appVideoList, resData)
-      }
-      else {
-        // else we concat the new data to the old data
-        Object.assign(appVideoList, appVideoList.concat(resData))
-      }
-    }
-    else if (response.code === 62011) {
-      needToLoginFirst.value = true
-    }
-  }
-  finally {
-    isLoading.value = false
-    emit('afterLoading')
+    trans2home()
   }
 }
 
@@ -278,7 +158,7 @@ defineExpose({ initData })
     >
       <template v-if="settings.recommendationMode === 'web'">
         <VideoCard
-          v-for="video in videoList"
+          v-for="video in videoList.slice(recommendCacheRecord[0])"
           :id="video.id"
           :key="video.id"
           :duration="video.duration"
@@ -299,7 +179,7 @@ defineExpose({ initData })
       </template>
       <template v-else>
         <VideoCard
-          v-for="video in appVideoList"
+          v-for="video in appVideoList.slice(recommendCacheRecord[0])"
           :id="video.args.aid ?? 0"
           ref="videoCardRef"
           :key="video.args.aid"
@@ -323,22 +203,10 @@ defineExpose({ initData })
           @more-click="(e) => handleMoreClick(e, video)"
         />
       </template>
-
-      <!-- skeleton -->
-      <template v-if="isLoading">
-        <VideoCardSkeleton
-          v-for="item in 30" :key="item"
-          :horizontal="gridLayout !== 'adaptive'"
-        />
-      </template>
     </div>
 
     <!-- no more content -->
     <Empty v-if="noMoreContent" class="pb-4" :description="$t('common.no_more_content')" />
-
-    <Transition name="fade">
-      <Loading v-if="isLoading" />
-    </Transition>
   </div>
 </template>
 

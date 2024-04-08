@@ -28,6 +28,14 @@ onBeforeUnmount(() => {
   clearInterval(pollLoginQRCodeInterval.value)
 })
 
+watch(() => settings.value.useAddon, () => {
+  if (!settings.value.useAddon) {
+    settings.value.useRecommendCache = false
+    settings.value.useNativeRecommendIntercept = false
+    settings.value.useNativeCommentIntercept = false
+  }
+})
+
 async function handleAuthorize() {
   showQRCodeDialog.value = true
   preventCloseSettings.value = true
@@ -270,6 +278,56 @@ function handleToggleHomeTab(tab: any) {
         <SettingsItem :title="$t('settings.always_show_the_top_bar_logo')">
           <Radio v-model="settings.alwaysShowTheTopBarLogoOnSearchPageMode" />
         </SettingsItem>
+      </template>
+    </SettingsItemGroup>
+
+    <SettingsItemGroup :title="$t('settings.group_addon') ">
+      <SettingsItem :title="$t('settings.use_addon')">
+        <template #desc>
+          <p>{{ $t('settings.addon_desc') }}</p>
+        </template>
+        <Radio v-model="settings.useAddon" />
+      </SettingsItem>
+      <template v-if="settings.useAddon">
+        <SettingsItem :title="$t('settings.addon_mode_opt.use_recommend_cache')">
+          <template #desc>
+            <p>{{ $t('settings.addon_mode_opt.recommend_cache_desc') }}</p>
+          </template>
+          <Radio v-model="settings.useRecommendCache" />
+        </SettingsItem>
+        <template v-if="settings.useRecommendCache">
+          <SettingsItem :title="$t('settings.addon_mode_opt.recommend_cache_opt.recommend_cache_limit')">
+            <Number v-model="settings.recommendCacheLimit" w-full />
+          </SettingsItem>
+        </template>
+
+        <SettingsItem :title="$t('settings.addon_mode_opt.use_native_recommend_intercept')">
+          <template #desc>
+            <p>{{ $t('settings.addon_mode_opt.native_recommend_intercept_desc') }}</p>
+          </template>
+          <Radio v-model="settings.useNativeRecommendIntercept" />
+        </SettingsItem>
+        <template v-if="settings.useNativeRecommendIntercept">
+          <SettingsItem :title="$t('settings.addon_mode_opt.recommend_cache_opt.recommend_cache_limit')">
+            <template #desc>
+              <p>{{ $t('common.soon') }}</p>
+            </template>
+          </SettingsItem>
+        </template>
+
+        <SettingsItem :title="$t('settings.addon_mode_opt.use_native_comment_intercept')">
+          <template #desc>
+            <p>{{ $t('settings.addon_mode_opt.native_comment_intercept_desc') }}</p>
+          </template>
+          <Radio v-model="settings.useNativeCommentIntercept" />
+        </SettingsItem>
+        <template v-if="settings.useNativeCommentIntercept">
+          <SettingsItem :title="$t('settings.addon_mode_opt.recommend_cache_opt.recommend_cache_limit')">
+            <template #desc>
+              <p>{{ $t('common.soon') }}</p>
+            </template>
+          </SettingsItem>
+        </template>
       </template>
     </SettingsItemGroup>
   </div>

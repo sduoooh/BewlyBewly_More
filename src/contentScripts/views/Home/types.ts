@@ -2,6 +2,7 @@ import type { GridLayout } from '~/logic'
 
 export enum HomeSubPage {
   ForYou = 'ForYou',
+  LastRecommend = 'LastRecommend',
   Following = 'Following',
   SubscribedSeries = 'SubscribedSeries',
   Trending = 'Trending',

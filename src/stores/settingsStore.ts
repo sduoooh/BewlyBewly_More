@@ -5,6 +5,7 @@ import type { HomeSubPage } from '~/contentScripts/views/Home/types'
 
 interface Settings {
   language: string
+  startupPage: AppPage
   enableHorizontalScrolling: boolean
   openLinkInCurrentTab: boolean
   enableVideoCtrlBarOnVideoCard: boolean
@@ -40,6 +41,12 @@ interface Settings {
   useSearchPageModeOnHomePage: boolean
   searchPageModeWallpaperFixed: boolean
   homePageTabVisibilityList: { page: HomeSubPage, visible: boolean }[]
+
+  useAddon: boolean
+  useRecommendCache: boolean
+  recommendCacheLimit: number
+  useNativeRecommendIntercept: boolean
+  useNativeCommentIntercept: boolean
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -81,6 +88,12 @@ export const useSettingsStore = defineStore('settings', () => {
     useSearchPageModeOnHomePage: false,
     searchPageModeWallpaperFixed: false,
     homePageTabVisibilityList: [],
+
+    useAddon: true,
+    useRecommendCache: true,
+    recommendCacheLimit: 3,
+    useNativeRecommendIntercept: false,
+    useNativeCommentIntercept: false,
   }), { mergeDefaults: true })
 
   function updateSettingsItem<T extends keyof Settings>(key: T, value: Settings[T]) {

@@ -33,6 +33,10 @@ export const useMainStore = defineStore('main', () => {
         page: HomeSubPage.ForYou,
       },
       {
+        i18nKey: 'home.last_recommend',
+        page: HomeSubPage.LastRecommend,
+      },
+      {
         i18nKey: 'home.following',
         page: HomeSubPage.Following,
       },

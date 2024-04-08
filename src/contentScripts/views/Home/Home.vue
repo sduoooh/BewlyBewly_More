@@ -3,6 +3,8 @@ import { Icon } from '@iconify/vue'
 import type { GridLayoutIcon } from './types'
 import { HomeSubPage } from './types'
 import emitter from '~/utils/mitt'
+import type { Item as VideoItem } from '~/models/video/forYou'
+import type { Item as AppVideoItem } from '~/models/video/appForYou'
 import { homePageGridLayout, settings } from '~/logic'
 import { delay } from '~/utils/main'
 import type { HomeTab } from '~/stores/mainStore'
@@ -14,6 +16,7 @@ const { handleBackToTop, scrollbarRef } = useBewlyApp()
 const activatedPage = ref<HomeSubPage>(HomeSubPage.ForYou)
 const pages = {
   [HomeSubPage.ForYou]: defineAsyncComponent(() => import('./components/ForYou.vue')),
+  [HomeSubPage.LastRecommend]: defineAsyncComponent(() => import('./components/LastRecommend.vue')),
   [HomeSubPage.Following]: defineAsyncComponent(() => import('./components/Following.vue')),
   [HomeSubPage.SubscribedSeries]: defineAsyncComponent(() => import('./components/SubscribedSeries.vue')),
   [HomeSubPage.Trending]: defineAsyncComponent(() => import('./components/Trending.vue')),
@@ -24,6 +27,10 @@ const shouldMoveTabsUp = ref<boolean>(false)
 const tabContentLoading = ref<boolean>(false)
 const currentTabs = ref<HomeTab[]>([])
 const tabPageRef = ref()
+
+const recommendCache = reactive<VideoItem[]>([])
+const recommendCacheAPP = reactive<AppVideoItem[]>([])
+const recommendCacheStrorageRecord = ref<number[]>([])
 
 const gridLayoutIcons = computed((): GridLayoutIcon[] => {
   return [
@@ -42,6 +49,24 @@ watch(() => JSON.stringify(settings.value.homePageTabVisibilityList), () => {
   currentTabs.value = computeTabs()
 })
 
+watch(() => settings.value.useRecommendCache, () => {
+  currentTabs.value = computeTabs()
+  if (activatedPage.value === HomeSubPage.LastRecommend && !settings.value.useRecommendCache)
+    activatedPage.value = currentTabs.value[0].page
+})
+
+watch(() => settings.value.useRecommendCache, () => {
+  initRecommendCache()
+})
+
+watch(() => settings.value.recommendationMode, () => {
+  initRecommendCache()
+})
+
+watch(() => settings.value.recommendCacheLimit, () => {
+  checkRecommendCache()
+})
+
 function computeTabs(): HomeTab[] {
   // if homePageTabVisibilityList not fresh , set it to default
   if (!settings.value.homePageTabVisibilityList.length || settings.value.homePageTabVisibilityList.length !== mainStore.homeTabs.length)
@@ -50,6 +75,8 @@ function computeTabs(): HomeTab[] {
   const targetTabs: HomeTab[] = []
 
   for (const tab of settings.value.homePageTabVisibilityList) {
+    if (tab.page === HomeSubPage.LastRecommend && !settings.value.useRecommendCache)
+      continue
     tab.visible && targetTabs.push({
       i18nKey: (mainStore.homeTabs.find(defaultTab => defaultTab.page === tab.page) || {})?.i18nKey || tab.page,
       page: tab.page,
@@ -131,6 +158,48 @@ function toggleTabContentLoading(loading: boolean) {
     tabContentLoading.value = loading
   })
 }
+
+function initRecommendCache() {
+  if (!settings.value.useRecommendCache) {
+    recommendCache.length = 0
+    recommendCacheAPP.length = 0
+    recommendCacheStrorageRecord.value.length = 0
+  }
+}
+
+function checkRecommendCache() {
+  if (settings.value.recommendCacheLimit + 1 < recommendCacheStrorageRecord.value.length) {
+    recommendCacheStrorageRecord.value.length = settings.value.recommendCacheLimit + 1
+    if (settings.value.recommendationMode === 'web') {
+      recommendCache.length = recommendCacheStrorageRecord.value.reduce((acc, cur) => acc + cur)
+      return
+    }
+    recommendCacheAPP.length = recommendCacheStrorageRecord.value.reduce((acc, cur) => acc + cur)
+  }
+}
+
+function updateRecommendCache(videoList: VideoItem[]) {
+  recommendCacheStrorageRecord.value.unshift(videoList.length)
+  recommendCache.unshift(...videoList)
+
+  if (recommendCacheStrorageRecord.value.length > settings.value.recommendCacheLimit + 1)
+    recommendCache.length -= recommendCacheStrorageRecord.value.pop()!
+}
+
+function updateRecommendCacheAPP(videoList: AppVideoItem[]) {
+  recommendCacheStrorageRecord.value.unshift(videoList.length)
+  recommendCacheAPP.unshift(...videoList)
+
+  if (recommendCacheStrorageRecord.value.length > settings.value.recommendCacheLimit)
+    recommendCache.length -= recommendCacheStrorageRecord.value.pop()!
+}
+
+provide('recommendCache', recommendCache)
+provide('recommendCacheAPP', recommendCacheAPP)
+provide('recommendCacheStrorageRecord', recommendCacheStrorageRecord)
+provide('updateRecommendCache', updateRecommendCache)
+provide('updateRecommendCacheAPP', updateRecommendCacheAPP)
+provide('trans2home', () => handleChangeTab(mainStore.homeTabs.find(tab => tab.page === HomeSubPage.ForYou) || mainStore.homeTabs[0]))
 </script>
 
 <template>

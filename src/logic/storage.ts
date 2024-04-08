@@ -52,6 +52,12 @@ export interface Settings {
   adaptToOtherPageStyles: boolean
   showTopBar: boolean
   useOriginalBilibiliHomepage: boolean
+
+  useAddon: boolean
+  useRecommendCache: boolean
+  recommendCacheLimit: number
+  useNativeRecommendIntercept: boolean
+  useNativeCommentIntercept: boolean
 }
 export const settings = useStorageLocal('settings', ref<Settings>({
   language: '',
@@ -98,6 +104,12 @@ export const settings = useStorageLocal('settings', ref<Settings>({
   adaptToOtherPageStyles: true,
   showTopBar: true,
   useOriginalBilibiliHomepage: false,
+
+  useAddon: false,
+  useRecommendCache: false,
+  recommendCacheLimit: 3,
+  useNativeRecommendIntercept: false,
+  useNativeCommentIntercept: false,
 }), { mergeDefaults: true })
 
 export type GridLayout = 'adaptive' | 'twoColumns' | 'oneColumn'

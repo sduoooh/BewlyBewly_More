@@ -24,6 +24,7 @@ common:
   refresh: 刷新
   reset: 重置
   no_more_content: 没有更多内容了
+  soon: 尚待施工
 settings:
   title: 设置
 
@@ -47,6 +48,7 @@ settings:
   group_recommendation_mode: 推荐模式
   group_search_page_mode: 搜索页模式
   group_home_tabs: 首页标签栏
+  group_addon: 魔改功能
 
   # Settings buttons
   btn:
@@ -136,6 +138,17 @@ settings:
   home_tabs_adjustment: 标签栏调整
   home_tabs_adjustment_desc: 第一个激活的标签项是默认界面
   always_show_the_top_bar_logo: 总是显示顶栏 Logo
+  use_addon: 启用魔改功能组
+  addon_desc: 启用后，将提供魔改功能组选项
+  addon_mode_opt:
+    use_recommend_cache: 启用推荐缓存功能
+    recommend_cache_desc: 启用后，提供按次缓存推荐视频流功能
+    recommend_cache_opt:
+      recommend_cache_limit: 推荐缓存次数上限
+    use_native_recommend_intercept: 启用up主本地黑名单
+    native_recommend_intercept_desc: 启用后，将在本地维护视频推荐流中的up主黑名单
+    use_native_comment_intercept: 启用评论区黑名单
+    native_comment_intercept_desc: 启用后，将在本地维护视频评论区中的用户黑名单
 
   # Compatibility
   # Common
@@ -255,6 +268,7 @@ home:
   trending: 热门视频
   ranking: 排行
   subscribed_series: 订阅剧集
+  last_recommend: 历史推荐
 ranking:
   all: 全部
   chinese_anime_related: 中国动画相关
