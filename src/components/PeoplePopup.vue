@@ -129,15 +129,6 @@ function prevPage() {
   </div>
 
   <div v-else>
-    <div flex items-center justify-center w-full>
-      <Button v-if="pageIndex !== 0" size="small" type="secondary" @click="prevPage">
-        {{ $t('common.prev') }}
-      </Button>
-      <span m-8>{{ $t('common.page', { count: pageStr }, pageStr) }}</span>
-      <Button v-if="pageIndex < Math.floor(props.length / 50)" size="small" type="secondary" @click="nextPage">
-        {{ $t('common.next') }}
-      </Button>
-    </div>
     <draggable v-model="execList" :component-data="{ style: 'display: flex; gap: 0.5rem; flex-wrap: wrap;' }">
       <template #item="{ element }">
         <div
@@ -152,6 +143,16 @@ function prevPage() {
         </div>
       </template>
     </draggable>
+
+    <div flex items-center justify-center w-full>
+      <Button v-if="pageIndex !== 0" size="small" type="secondary" @click="prevPage">
+        {{ $t('common.prev') }}
+      </Button>
+      <span m-8>{{ $t('common.page', { count: pageStr }, pageStr) }}</span>
+      <Button v-if="pageIndex < Math.floor(props.length / 50)" size="small" type="secondary" @click="nextPage">
+        {{ $t('common.next') }}
+      </Button>
+    </div>
   </div>
 </template>
 
