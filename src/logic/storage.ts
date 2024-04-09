@@ -57,6 +57,7 @@ export interface Settings {
   useRecommendCache: boolean
   recommendCacheLimit: number
   useNativeRecommendIntercept: boolean
+  nativeRecommenderInterceptedList: number[]
   useNativeCommentIntercept: boolean
 }
 export const settings = useStorageLocal('settings', ref<Settings>({
@@ -109,7 +110,20 @@ export const settings = useStorageLocal('settings', ref<Settings>({
   useRecommendCache: false,
   recommendCacheLimit: 3,
   useNativeRecommendIntercept: false,
+  nativeRecommenderInterceptedList: [],
   useNativeCommentIntercept: false,
+}), { mergeDefaults: true })
+
+export interface Wbi {
+  img_key: string
+  sub_key: string
+  date: number
+}
+
+export const wbi = useStorageLocal('bewl-wbi', ref<Wbi>({
+  img_key: '',
+  sub_key: '',
+  date: 0,
 }), { mergeDefaults: true })
 
 export type GridLayout = 'adaptive' | 'twoColumns' | 'oneColumn'

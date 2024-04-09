@@ -8,10 +8,10 @@ const props = withDefaults(defineProps<Props>(), { size: 'medium' })
 
 const emits = defineEmits(['update:modelValue'])
 
-const modelValue = ref<number>(props.modelValue) // 直接使用props初始化并声明为基本类型 number
+const modelValue = ref<number>(props.modelValue)
 
 watch(() => props.modelValue, (newValue) => {
-  modelValue.value = newValue // 响应式地更新内部状态
+  modelValue.value = newValue
 })
 
 function updateValue(event: Event) {

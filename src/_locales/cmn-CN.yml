@@ -25,6 +25,9 @@ common:
   reset: 重置
   no_more_content: 没有更多内容了
   soon: 尚待施工
+  page: '第 {count} 页'
+  prev: 上一页
+  next: 下一页
 settings:
   title: 设置
 
@@ -147,6 +150,8 @@ settings:
       recommend_cache_limit: 推荐缓存次数上限
     use_native_recommend_intercept: 启用up主本地黑名单
     native_recommend_intercept_desc: 启用后，将在本地维护视频推荐流中的up主黑名单
+    native_recommend_intercept_opt:
+      native_recommend_intercept_list: up主黑名单
     use_native_comment_intercept: 启用评论区黑名单
     native_comment_intercept_desc: 启用后，将在本地维护视频评论区中的用户黑名单
 

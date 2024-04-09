@@ -46,6 +46,7 @@ interface Settings {
   useRecommendCache: boolean
   recommendCacheLimit: number
   useNativeRecommendIntercept: boolean
+  nativeRecommenderInterceptedList: number[]
   useNativeCommentIntercept: boolean
 }
 
@@ -93,6 +94,7 @@ export const useSettingsStore = defineStore('settings', () => {
     useRecommendCache: true,
     recommendCacheLimit: 3,
     useNativeRecommendIntercept: false,
+    nativeRecommenderInterceptedList: [],
     useNativeCommentIntercept: false,
   }), { mergeDefaults: true })
 

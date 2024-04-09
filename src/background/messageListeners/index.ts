@@ -4,6 +4,7 @@ import { setupVideoMsgLstnr } from './video'
 import { setupUserMsgLstnr } from './user'
 import { setupSearchMsgLstnr } from './search'
 import { setupNotificationMsgLstnr } from './notification'
+import { setupPeopleMsgLstnr } from './people'
 import { setupMomentMsgLstnr } from './moment'
 import { setupHistoryMsgLstnr } from './history'
 import { setupFavoriteMsgLstnr } from './favorite'
@@ -16,6 +17,7 @@ export function setupAllMsgLstnrs() {
   setupUserMsgLstnr()
   setupSearchMsgLstnr()
   setupNotificationMsgLstnr()
+  setupPeopleMsgLstnr()
   setupMomentMsgLstnr()
   setupHistoryMsgLstnr()
   setupFavoriteMsgLstnr()

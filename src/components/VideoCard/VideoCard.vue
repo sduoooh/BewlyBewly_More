@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { useThrottleFn } from '@vueuse/core'
 import { getCSRF, removeHttpFromUrl } from '~/utils/main'
 import { calcCurrentTime, calcTimeSince, numFormatter } from '~/utils/dataFormatter'
 import type { VideoPreviewResult } from '~/models/video/videoPreview'
@@ -78,12 +79,15 @@ const wValue = computed((): string => {
 })
 
 const isDislike = ref<boolean>(false)
+const isIntercepted = ref<boolean>(false)
 const isInWatchLater = ref<boolean>(false)
 const isHover = ref<boolean>(false)
 const contentVisibility = ref<'auto' | 'visible'>('auto')
 const mouseEnterTimeOut = ref()
 const mouseLeaveTimeOut = ref()
 const previewVideoUrl = ref<string>('')
+
+const throttleNativeRecommenderIntercepted = useThrottleFn(() => addNativeRecommenderIntercepted(), 500)
 
 watch(() => isHover.value, (newValue) => {
   if (props.showPreview) {
@@ -98,6 +102,14 @@ watch(() => isHover.value, (newValue) => {
       })
     }
   }
+})
+
+watch(() => settings.value.useNativeRecommendIntercept, (newValue) => {
+  isIntercepted.value = newValue && settings.value.nativeRecommenderInterceptedList.includes(props.mid!)
+}, { immediate: true })
+
+watch(() => JSON.stringify(settings.value.nativeRecommenderInterceptedList), () => {
+  isIntercepted.value = settings.value.nativeRecommenderInterceptedList.includes(props.mid!)
 })
 
 function toggleWatchLater() {
@@ -152,11 +164,21 @@ function handelMouseLeave() {
 function handleMoreBtnClick(event: MouseEvent) {
   emit('moreClick', event)
 }
+
+function addNativeRecommenderIntercepted() {
+  if (!settings.value.useNativeRecommendIntercept)
+    return
+  if (settings.value.nativeRecommenderInterceptedList.includes(props.mid!)) {
+    console.warn('The mid has been added to the intercept list, may be a bug.')
+    return
+  }
+  settings.value.nativeRecommenderInterceptedList.push(props.mid!)
+}
 </script>
 
 <template>
   <div
-    relative
+    v-if="!isIntercepted" relative
   >
     <!-- By directly using predefined unocss width properties, it is possible to dynamically set the width attribute -->
     <div hidden w="xl:280px lg:250px md:200px 200px" />
@@ -356,7 +378,7 @@ function handleMoreBtnClick(event: MouseEvent) {
                   un-text="hover:$bew-text-1"
                   cursor-pointer mr-4
                   :href="authorJumpUrl" target="_blank" rel="noopener noreferrer"
-                  @click.stop=""
+                  @click.stop="" @contextmenu.prevent="throttleNativeRecommenderIntercepted"
                 >
                   {{ author }}
                 </a>

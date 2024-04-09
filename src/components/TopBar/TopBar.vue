@@ -188,6 +188,13 @@ async function getUserInfo() {
 
     if (res.code === 0) {
       isLogin.value = true
+      // if (new Date().setHours(0, 0, 0, 0) > wbi.value.date) {
+      //   let img_url = res.data.data.wbi_img.img_url
+      //   let sub_url = res.data.data.wbi_img.sub_url
+      //   wbi.value.date = new Date().setHours(0, 0, 0, 0)
+      //   wbi.value.img_key = img_url.substring(img_url.lastIndexOf('/') + 1, img_url.length).split('.')[0]
+      //   wbi.value.sub_key = sub_url.substring(sub_url.lastIndexOf('/') + 1, sub_url.length).split('.')[0]
+      // }
       Object.assign(userInfo, res.data)
     }
     // Account not logged in

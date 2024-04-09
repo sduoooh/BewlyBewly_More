@@ -308,10 +308,8 @@ function handleToggleHomeTab(tab: any) {
           <Radio v-model="settings.useNativeRecommendIntercept" />
         </SettingsItem>
         <template v-if="settings.useNativeRecommendIntercept">
-          <SettingsItem :title="$t('settings.addon_mode_opt.recommend_cache_opt.recommend_cache_limit')">
-            <template #desc>
-              <p>{{ $t('common.soon') }}</p>
-            </template>
+          <SettingsItem :title="$t('settings.addon_mode_opt.native_recommend_intercept_opt.native_recommend_intercept_list')" next-line>
+            <PeoplePopup v-model="settings.nativeRecommenderInterceptedList" />
           </SettingsItem>
         </template>
 
