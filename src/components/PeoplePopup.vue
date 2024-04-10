@@ -42,10 +42,12 @@ async function getPeopleInfo() {
   let uids = [] as number[]
   if (peopleInfoCache.value.size) {
     for (let i = cachePage.value * 50; i < Math.min(cachePage.value * 50 + 50, props.length); i++) {
-      if (peopleInfoCache.value.has(props[i]))
+      if (peopleInfoCache.value.has(props[i])) {
         showList.push(peopleInfoCache.value.get(props[i])!)
-      else
-        uids.push(props[i])
+        showList[showList.length - 1].isIncluded = true
+      }
+
+      else { uids.push(props[i]) }
     }
   }
   else {
