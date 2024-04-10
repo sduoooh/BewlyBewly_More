@@ -47,7 +47,6 @@ interface Settings {
   recommendCacheLimit: number
   useNativeRecommendIntercept: boolean
   nativeRecommenderInterceptedList: number[]
-  useNativeCommentIntercept: boolean
 }
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -95,7 +94,6 @@ export const useSettingsStore = defineStore('settings', () => {
     recommendCacheLimit: 3,
     useNativeRecommendIntercept: false,
     nativeRecommenderInterceptedList: [],
-    useNativeCommentIntercept: false,
   }), { mergeDefaults: true })
 
   function updateSettingsItem<T extends keyof Settings>(key: T, value: Settings[T]) {

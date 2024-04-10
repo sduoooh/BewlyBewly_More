@@ -22,7 +22,7 @@ const showList = reactive<PeopleInfo[]>([])
 const isNoContent = computed(() => showList.length !== 0)
 const pageIndex = ref<number>(0)
 const pageStr = computed(() => `${pageIndex.value + 1} / ${Math.ceil(props.length / 50)}`)
-const cachePage = ref<number>(0)
+const cachePage = computed(() => Math.ceil(showList.length / 50))
 const execList = computed(() => showList.slice(pageIndex.value * 50 + 0, Math.min(pageIndex.value * 50 + 50, props.length)))
 const peopleInfoCache = ref<Map<number, PeopleInfo>>(new Map<number, PeopleInfo>())
 onMounted(async () => {
@@ -34,8 +34,6 @@ watch(() => JSON.parse(JSON.stringify(prop.modelValue)), (newValue) => {
     return
   isLoading.value = true
   props = JSON.parse(JSON.stringify(newValue)) as number[]
-  cachePage.value = 0
-  pageIndex.value = 0
   showList.length = 0
   getPeopleInfo()
 })
@@ -54,7 +52,6 @@ async function getPeopleInfo() {
     uids = props.slice(cachePage.value * 50 + 0, Math.min(cachePage.value * 50 + 50, props.length))
   }
   if (!uids.length) {
-    cachePage.value++
     isLoading.value = false
     return
   }
@@ -70,7 +67,6 @@ async function getPeopleInfo() {
   }
 
   if (response.code === 0) {
-    cachePage.value++
     showList.push(...response.data.map((item: any) => {
       peopleInfoCache.value.set(item.mid, {
         uid: item.mid,
@@ -101,10 +97,10 @@ function handelIntercepter(element: PeopleInfo) {
 }
 
 async function nextPage() {
-  if (pageIndex.value < cachePage.value - 1 && pageIndex.value < Math.floor(props.length / 50)) {
+  if (pageIndex.value < cachePage.value - 1) {
     pageIndex.value++
   }
-  else if (pageIndex.value < Math.floor(props.length / 50)) {
+  else if (pageIndex.value < Math.ceil(props.length / 50) - 1) {
     isLoading.value = true
     await getPeopleInfo()
       .then(() => {
@@ -149,7 +145,7 @@ function prevPage() {
         {{ $t('common.prev') }}
       </Button>
       <span m-8>{{ $t('common.page', { count: pageStr }, pageStr) }}</span>
-      <Button v-if="pageIndex < Math.floor(props.length / 50)" size="small" type="secondary" @click="nextPage">
+      <Button v-if="pageIndex < Math.ceil(props.length / 50) - 1" size="small" type="secondary" @click="nextPage">
         {{ $t('common.next') }}
       </Button>
     </div>

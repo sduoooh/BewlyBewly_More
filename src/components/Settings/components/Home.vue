@@ -32,7 +32,6 @@ watch(() => settings.value.useAddon, () => {
   if (!settings.value.useAddon) {
     settings.value.useRecommendCache = false
     settings.value.useNativeRecommendIntercept = false
-    settings.value.useNativeCommentIntercept = false
   }
 })
 
@@ -310,20 +309,6 @@ function handleToggleHomeTab(tab: any) {
         <template v-if="settings.useNativeRecommendIntercept">
           <SettingsItem :title="$t('settings.addon_mode_opt.native_recommend_intercept_opt.native_recommend_intercept_list')" next-line>
             <PeoplePopup v-model="settings.nativeRecommenderInterceptedList" />
-          </SettingsItem>
-        </template>
-
-        <SettingsItem :title="$t('settings.addon_mode_opt.use_native_comment_intercept')">
-          <template #desc>
-            <p>{{ $t('settings.addon_mode_opt.native_comment_intercept_desc') }}</p>
-          </template>
-          <Radio v-model="settings.useNativeCommentIntercept" />
-        </SettingsItem>
-        <template v-if="settings.useNativeCommentIntercept">
-          <SettingsItem :title="$t('settings.addon_mode_opt.recommend_cache_opt.recommend_cache_limit')">
-            <template #desc>
-              <p>{{ $t('common.soon') }}</p>
-            </template>
           </SettingsItem>
         </template>
       </template>
